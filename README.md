@@ -6,7 +6,9 @@ A comprehensive demonstration of SAML 2.0 and OpenID Connect authentication with
 
 This project demonstrates a centralized authentication system with:
 
-- **Auth App** - ASP.NET Framework 4.8 SAML service provider
+- **Auth Service** - Dual-protocol authentication service
+  - SAML 2.0: .NET Framework 4.8 & .NET 8.0
+  - OpenID Connect: .NET Framework 4.8 only
 - **Browser Extension** - Chrome/Edge extension for centralized session storage
 - **Web App** - Dummy web application using extension authentication
 - **Desktop App** - WPF application using native messaging for authentication
@@ -39,9 +41,8 @@ See [SECRETS_SETUP.md](SECRETS_SETUP.md) for detailed instructions on setting up
 
 ```
 SamlSsoPlayground/
-├── dotnet-saml-service-provider/     # Main SAML auth app
-│   └── DotNetFrameworkSamlSP/
-├── oidc-service-provider/             # OIDC/OpenID Connect demo
+├── auth-service/                      # Main SAML auth app (multi-platform)
+│   └── AuthService/
 ├── auth-extension/                    # Browser extension
 │   ├── manifest.json
 │   ├── background.js
@@ -73,19 +74,27 @@ SamlSsoPlayground/
 
 ### 1. Set Up Azure AD
 
-Create two app registrations in Azure AD:
-- **SAML App** - For SAML 2.0 authentication
-- **OIDC App** - For OpenID Connect authentication
+Create app registrations in Azure AD:
+- **SAML App** - For SAML 2.0 authentication (Enterprise Application)
+- **OIDC App** - For OpenID Connect authentication (App Registration)
 
 ### 2. Configure Secrets
 
 Follow the [SECRETS_SETUP.md](SECRETS_SETUP.md) guide to set up your local configuration files.
 
-### 3. Run the Auth App
+### 3. Run the Auth Service
 
-1. Open `dotnet-saml-service-provider/DotNetFrameworkSamlSP.sln` in Visual Studio
+**Option A: .NET Framework 4.8 (Visual Studio) - SAML + OIDC**
+1. Open `auth-service/AuthService.sln` in Visual Studio
 2. Press F5 to run with IIS Express
 3. Navigate to `https://localhost:44300`
+4. Both SAML and OIDC login options available
+
+**Option B: .NET 8.0 (Command Line) - SAML Only**
+1. `cd auth-service/AuthService`
+2. `dotnet run`
+3. Navigate to the URL shown in the console
+4. Only SAML login available (OIDC requires .NET Framework)
 
 ### 4. Load the Extension
 
@@ -135,12 +144,28 @@ reg add "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.saml.authhost" /ve
 
 ## 🛠️ Technologies
 
-- **Backend**: ASP.NET MVC 5 (.NET Framework 4.8)
-- **SAML**: Sustainsys.Saml2
-- **OIDC**: Microsoft.Owin.Security.OpenIdConnect
+- **Backend**: ASP.NET MVC 5
+- **SAML**: Sustainsys.Saml2 (multi-platform: .NET Framework & .NET Core)
+- **OIDC**: Microsoft.Owin.Security.OpenIdConnect (.NET Framework only)
 - **Desktop**: WPF (.NET 8)
 - **Browser**: Chrome Extension Manifest V3
 - **IPC**: Chrome Native Messaging Protocol
+
+## 🔧 Multi-Platform Support
+
+The Auth Service offers flexible platform support:
+
+| Feature | .NET Framework 4.8 | .NET 8.0 |
+|---------|-------------------|----------|
+| **SAML 2.0** | ✅ Supported | ✅ Supported |
+| **OpenID Connect** | ✅ Supported | ❌ Not available* |
+| **Extension Integration** | ✅ Yes | ✅ Yes |
+| **Desktop App Support** | ✅ Yes | ✅ Yes |
+| **Runtime** | IIS/IIS Express | Kestrel |
+
+*OIDC uses OWIN middleware which is .NET Framework-only
+
+**Recommended**: Run on .NET Framework 4.8 to get both SAML and OIDC support.
 
 ## 📝 License
 

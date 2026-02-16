@@ -341,3 +341,4 @@ config.js
 
 # Native messaging host manifest (contains extension ID and absolute paths)
 native-messaging-host/auth-host-manifest.json
+.claude
