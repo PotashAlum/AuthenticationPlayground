@@ -75,29 +75,12 @@
         .btn-primary:hover {
             background-color: #0056b3;
         }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
         .btn-danger {
             background-color: #dc3545;
             color: white;
         }
         .btn-danger:hover {
             background-color: #c82333;
-        }
-        .extension-info {
-            background-color: #e7f3ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
-            border-left: 4px solid #007bff;
-        }
-        .extension-info h4 {
-            margin-top: 0;
         }
         .spinner {
             border: 3px solid #f3f3f3;
@@ -119,7 +102,7 @@
 <body>
     <div class="container">
         <h1>Dummy Web Application</h1>
-        <p class="subtitle">This is a demo application that integrates with the centralized auth extension</p>
+        <p class="subtitle">This is a demo application that uses centralized authentication</p>
 
         <div id="status" class="status loading">
             <div class="spinner"></div>
@@ -132,14 +115,7 @@
         </div>
 
         <div id="actions">
-            <button id="loginBtn" class="btn-primary" style="display: none;">Login</button>
-            <button id="checkExtensionBtn" class="btn-secondary" style="display: none;">Check Extension</button>
             <button id="logoutBtn" class="btn-danger" style="display: none;">Logout</button>
-        </div>
-
-        <div id="extensionInfo" class="extension-info" style="display: none;">
-            <h4>Extension Status</h4>
-            <p id="extensionStatus"></p>
         </div>
     </div>
 

@@ -149,57 +149,17 @@ else
     }
 
     async function displayExtensionSession(session) {
-        // First, try to sign in with the extension session
-        try {
-            console.log('Calling ExtensionLogin with:', session.user);
-            const response = await fetch('@Url.Action("ExtensionLogin", "Auth")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    userName: session.user.name,
-                    userEmail: session.user.email
-                })
-            });
-
-            console.log('Response status:', response.status);
-            const result = await response.json();
-            console.log('Response result:', result);
-
-            if (result.success) {
-                // Successfully signed in, reload the page to show authenticated state
-                console.log('Successfully signed in with extension session - reloading page');
-                window.location.reload();
-                return;
-            } else {
-                console.error('Failed to sign in with extension session:', result.error);
-                alert('Failed to auto-sign in: ' + result.error);
-            }
-        } catch (error) {
-            console.error('Error signing in with extension session:', error);
-            alert('Error during auto-sign in: ' + error.message);
-        }
-
-        // If sign-in failed, just display the session info
-        const displayDiv = document.getElementById('extensionSessionDisplay');
-        const infoDiv = document.getElementById('extensionSessionInfo');
-
-        const sessionDate = new Date(session.authenticatedAt);
-        infoDiv.innerHTML = `
-            <p><strong>User:</strong> ${session.user.name}</p>
-            <p><strong>Email:</strong> ${session.user.email}</p>
-            <p><strong>Authenticated:</strong> ${sessionDate.toLocaleString()}</p>
-            <p class="text-warning"><small>Note: Could not auto-sign in. Click a login button to authenticate.</small></p>
-        `;
-
-        displayDiv.style.display = 'block';
-
-        // Hide the login buttons if session exists
-        const loginAlert = document.querySelector('.alert-info');
-        if (loginAlert) {
-            loginAlert.style.display = 'none';
-        }
+        // Found session in extension, redirect to web app with session data
+        console.log('Found session in extension, redirecting to web app with session data');
+        const sessionData = {
+            user: {
+                name: session.user.name,
+                email: session.user.email
+            },
+            authenticatedAt: session.authenticatedAt
+        };
+        const sessionParam = encodeURIComponent(JSON.stringify(sessionData));
+        window.location.href = `http://localhost:8080?session=${sessionParam}`;
     }
 
     // Clear extension session button handler

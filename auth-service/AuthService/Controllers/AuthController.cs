@@ -12,7 +12,7 @@ namespace AuthService.Controllers
     public class AuthController : Controller
     {
         // GET: Auth/Login
-        // This redirects to the SAML2 module which handles the actual SAML authentication
+        // This shows a view that checks extension session before redirecting to SAML
         public ActionResult Login(string returnType = null)
         {
             // Check if already authenticated
@@ -27,13 +27,11 @@ namespace AuthService.Controllers
                 Session["ReturnType"] = returnType;
             }
 
-            // The Sustainsys.Saml2.HttpModule handles /Saml2/SignIn automatically
-            // Just redirect there with callback to process the returnType
-            var returnUrl = string.IsNullOrEmpty(returnType)
-                ? Url.Action("Index", "Home")
-                : Url.Action("Callback", "Auth");
-
-            return Redirect("~/Saml2/SignIn?ReturnUrl=" + Server.UrlEncode(returnUrl));
+            // Show the Home/Index view which will:
+            // 1. Check extension for existing session
+            // 2. If session found, redirect to web app with session data
+            // 3. Otherwise, show login buttons (SAML/OIDC)
+            return RedirectToAction("Index", "Home");
         }
 
         // GET: Auth/Callback

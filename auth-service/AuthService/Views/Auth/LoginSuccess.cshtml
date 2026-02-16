@@ -131,9 +131,16 @@
             if (typeof chrome === 'undefined' || !chrome.runtime) {
                 console.error('chrome.runtime is not available - externally_connectable not working');
                 showInfo('Could not communicate with extension. Session saved locally in this browser.');
-                setTimeout(() => {
-                    document.getElementById('homeLink').style.display = 'inline-block';
-                }, 1500);
+                // Redirect to web app with session data even if extension not available
+                const sessionData = {
+                    user: {
+                        name: userName,
+                        email: userEmail
+                    },
+                    authenticatedAt: Date.now()
+                };
+                const sessionParam = encodeURIComponent(JSON.stringify(sessionData));
+                window.location.href = `http://localhost:8080?session=${sessionParam}`;
                 return;
             }
 
@@ -179,16 +186,30 @@
                         showInfo('Could not communicate with extension. Session saved locally in this browser.');
                     }
 
-                    setTimeout(() => {
-                        document.getElementById('homeLink').style.display = 'inline-block';
-                    }, 1500);
+                    // Redirect to web app with session data
+                    const sessionData = {
+                        user: {
+                            name: userName,
+                            email: userEmail
+                        },
+                        authenticatedAt: Date.now()
+                    };
+                    const sessionParam = encodeURIComponent(JSON.stringify(sessionData));
+                    window.location.href = `http://localhost:8080?session=${sessionParam}`;
                 });
             } catch (error) {
                 console.error('Extension error:', error);
                 showInfo('Could not communicate with extension. Session saved locally in this browser.');
-                setTimeout(() => {
-                    document.getElementById('homeLink').style.display = 'inline-block';
-                }, 1500);
+                // Redirect to web app with session data even if extension save failed
+                const sessionData = {
+                    user: {
+                        name: userName,
+                        email: userEmail
+                    },
+                    authenticatedAt: Date.now()
+                };
+                const sessionParam = encodeURIComponent(JSON.stringify(sessionData));
+                window.location.href = `http://localhost:8080?session=${sessionParam}`;
             }
         }
 
