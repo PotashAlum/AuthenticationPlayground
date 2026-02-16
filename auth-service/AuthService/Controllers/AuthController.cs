@@ -104,6 +104,71 @@ namespace AuthService.Controllers
             }
         }
 
+        // POST/GET: Auth/ExtensionLogin
+        // This endpoint accepts a session from the extension and creates an authenticated session
+        public ActionResult ExtensionLogin(string userName, string userEmail)
+        {
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Json(new { success = false, error = "Missing userName" }, JsonRequestBehavior.AllowGet);
+            }
+
+            try
+            {
+                // Sign in the user using Forms Authentication
+                var ticket = new FormsAuthenticationTicket(
+                    version: 1,
+                    name: userName,
+                    issueDate: DateTime.Now,
+                    expiration: DateTime.Now.AddHours(24),
+                    isPersistent: true, // Make it persistent
+                    userData: JsonConvert.SerializeObject(new { email = userEmail, authType = "Extension" })
+                );
+
+                var encryptedTicket = FormsAuthentication.Encrypt(ticket);
+                var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+                {
+                    HttpOnly = true,
+                    Secure = Request.IsSecureConnection,
+                    Path = FormsAuthentication.FormsCookiePath,
+                    Expires = DateTime.Now.AddHours(24)
+                };
+
+                Response.Cookies.Add(cookie);
+
+                System.Diagnostics.Debug.WriteLine($"ExtensionLogin: Created cookie for {userName}");
+                System.Diagnostics.Debug.WriteLine($"Cookie name: {FormsAuthentication.FormsCookieName}");
+                System.Diagnostics.Debug.WriteLine($"Cookie path: {FormsAuthentication.FormsCookiePath}");
+
+                return Json(new { success = true, cookieName = FormsAuthentication.FormsCookieName }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ExtensionLogin error: {ex.Message}");
+                return Json(new { success = false, error = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // GET: Auth/CheckAuth
+        // Debug endpoint to check authentication status
+        public ActionResult CheckAuth()
+        {
+            var isAuthenticated = Request.IsAuthenticated;
+            var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Not authenticated";
+            var authType = User.Identity.AuthenticationType ?? "None";
+
+            var cookieExists = Request.Cookies[FormsAuthentication.FormsCookieName] != null;
+
+            return Json(new
+            {
+                isAuthenticated,
+                userName,
+                authType,
+                cookieExists,
+                cookieName = FormsAuthentication.FormsCookieName
+            }, JsonRequestBehavior.AllowGet);
+        }
+
         // GET: Auth/Logout
         public ActionResult Logout()
         {

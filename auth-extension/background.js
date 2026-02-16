@@ -15,6 +15,11 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
     return true; // Will respond asynchronously
   }
 
+  if (request.action === 'getSession') {
+    handleGetSession(sendResponse);
+    return true;
+  }
+
   if (request.action === 'requestToken') {
     handleRequestToken(sendResponse);
     return true;
@@ -27,6 +32,11 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
 
   if (request.action === 'saveSession') {
     handleSaveSession(request.session, sendResponse);
+    return true;
+  }
+
+  if (request.action === 'logout') {
+    handleLogout(sendResponse);
     return true;
   }
 });

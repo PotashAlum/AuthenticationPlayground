@@ -102,12 +102,132 @@ else
     </div>
 </div>
 
+<!-- Extension Session Display (hidden by default) -->
+<div id="extensionSessionDisplay" class="alert alert-success" role="alert" style="display: none;">
+    <h4 class="alert-heading">✅ Active Session from Extension</h4>
+    <p>You have an active session from the browser extension:</p>
+    <div id="extensionSessionInfo"></div>
+    <button id="clearExtensionSession" class="btn btn-warning mt-3">Clear Extension Session</button>
+</div>
+
+<script>
+    const EXTENSION_ID = '@ConfigHelper.ExtensionId';
+
+    // Check for existing session in extension on page load
+    async function checkExtensionSession() {
+        // Don't check extension if already authenticated server-side
+        const isAuthenticated = @(Request.IsAuthenticated ? "true" : "false");
+        if (isAuthenticated) {
+            console.log('Already authenticated server-side, skipping extension check');
+            return;
+        }
+
+        if (typeof chrome === 'undefined' || !chrome.runtime) {
+            console.log('Extension runtime not available');
+            return;
+        }
+
+        try {
+            chrome.runtime.sendMessage(EXTENSION_ID, {
+                action: 'getSession'
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.log('Extension not available:', chrome.runtime.lastError.message);
+                    return;
+                }
+
+                if (response && response.session) {
+                    console.log('Found active session in extension:', response.session);
+                    displayExtensionSession(response.session);
+                } else {
+                    console.log('No active session in extension');
+                }
+            });
+        } catch (error) {
+            console.error('Error checking extension session:', error);
+        }
+    }
+
+    async function displayExtensionSession(session) {
+        // First, try to sign in with the extension session
+        try {
+            console.log('Calling ExtensionLogin with:', session.user);
+            const response = await fetch('@Url.Action("ExtensionLogin", "Auth")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    userName: session.user.name,
+                    userEmail: session.user.email
+                })
+            });
+
+            console.log('Response status:', response.status);
+            const result = await response.json();
+            console.log('Response result:', result);
+
+            if (result.success) {
+                // Successfully signed in, reload the page to show authenticated state
+                console.log('Successfully signed in with extension session - reloading page');
+                window.location.reload();
+                return;
+            } else {
+                console.error('Failed to sign in with extension session:', result.error);
+                alert('Failed to auto-sign in: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error signing in with extension session:', error);
+            alert('Error during auto-sign in: ' + error.message);
+        }
+
+        // If sign-in failed, just display the session info
+        const displayDiv = document.getElementById('extensionSessionDisplay');
+        const infoDiv = document.getElementById('extensionSessionInfo');
+
+        const sessionDate = new Date(session.authenticatedAt);
+        infoDiv.innerHTML = `
+            <p><strong>User:</strong> ${session.user.name}</p>
+            <p><strong>Email:</strong> ${session.user.email}</p>
+            <p><strong>Authenticated:</strong> ${sessionDate.toLocaleString()}</p>
+            <p class="text-warning"><small>Note: Could not auto-sign in. Click a login button to authenticate.</small></p>
+        `;
+
+        displayDiv.style.display = 'block';
+
+        // Hide the login buttons if session exists
+        const loginAlert = document.querySelector('.alert-info');
+        if (loginAlert) {
+            loginAlert.style.display = 'none';
+        }
+    }
+
+    // Clear extension session button handler
+    document.getElementById('clearExtensionSession')?.addEventListener('click', function() {
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            chrome.runtime.sendMessage(EXTENSION_ID, {
+                action: 'logout'
+            }, (response) => {
+                if (!chrome.runtime.lastError) {
+                    document.getElementById('extensionSessionDisplay').style.display = 'none';
+                    const loginAlert = document.querySelector('.alert-info');
+                    if (loginAlert) {
+                        loginAlert.style.display = 'block';
+                    }
+                    console.log('Extension session cleared');
+                }
+            });
+        }
+    });
+
+    // Check for extension session when page loads
+    window.addEventListener('load', checkExtensionSession);
+</script>
+
 @if (Request.IsAuthenticated)
 {
     <script>
         // Auto-save session to extension when user is authenticated
-        const EXTENSION_ID = '@ConfigHelper.ExtensionId';
-
         // Extract user info from the page
         const userIdentity = '@User.Identity.Name';
         const claims = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(
