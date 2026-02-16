@@ -1,0 +1,9 @@
+{
+    "name":  "com.saml.authhost",
+    "description":  "Authentication Native Messaging Host",
+    "path":  "ABSOLUTE_PATH_TO\\SamlSsoPlayground\\native-messaging-host\\run-host.bat",
+    "type":  "stdio",
+    "allowed_origins":  [
+                            "chrome-extension://YOUR_EXTENSION_ID_HERE/"
+                        ]
+}

@@ -1,0 +1,132 @@
+@{
+    ViewBag.Title = "Home";
+}
+
+<div class="text-center mb-4">
+    <h1 class="display-4">SAML Service Provider</h1>
+    <p class="lead">.NET Framework 4.8 with Sustainsys.Saml2</p>
+    <hr class="my-4">
+</div>
+
+@if (Request.IsAuthenticated)
+{
+    <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading">✅ Authenticated Successfully!</h4>
+        <p>You are logged in as: <strong>@User.Identity.Name</strong></p>
+        <hr>
+        <h5>User Claims:</h5>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width: 40%">Claim Type</th>
+                        <th style="width: 60%">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var claim in System.Security.Claims.ClaimsPrincipal.Current.Claims)
+                    {
+                        <tr>
+                            <td><code>@claim.Type</code></td>
+                            <td>@claim.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <a href="@Url.Action("Logout", "Auth")" class="btn btn-danger mt-3">Logout</a>
+    </div>
+}
+else
+{
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">Not Authenticated</h4>
+        <p>You are not currently logged in. Click the button below to authenticate via SAML.</p>
+        <a href="@Url.Action("Login", "Auth")" class="btn btn-primary btn-lg mt-2">Login with SAML</a>
+    </div>
+}
+
+<div class="mt-5">
+    <h3>SAML Endpoints</h3>
+    <p class="text-muted">Configure these endpoints in your Identity Provider (Azure Entra ID):</p>
+    <ul class="list-group">
+        <li class="list-group-item">
+            <strong>Metadata URL:</strong>
+            <a href="@Url.Action("Index", "Saml2", null, Request.Url.Scheme)" target="_blank">
+                @Url.Action("Index", "Saml2", null, Request.Url.Scheme)
+            </a>
+        </li>
+        <li class="list-group-item">
+            <strong>Entity ID:</strong> <code>dotnet-framework-saml-sp</code>
+        </li>
+        <li class="list-group-item">
+            <strong>Assertion Consumer Service (ACS):</strong>
+            <code>@Url.Action("Acs", "Saml2", null, Request.Url.Scheme)</code>
+        </li>
+        <li class="list-group-item">
+            <strong>Sign On URL:</strong>
+            <code>@Url.Action("Login", "Auth", null, Request.Url.Scheme)</code>
+        </li>
+        <li class="list-group-item">
+            <strong>Logout URL:</strong>
+            <code>@Url.Action("Logout", "Auth", null, Request.Url.Scheme)</code>
+        </li>
+    </ul>
+</div>
+
+<div class="mt-5">
+    <h3>Configuration</h3>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Identity Provider</h5>
+            <p class="card-text">
+                This Service Provider is configured to authenticate with Azure Entra ID using the metadata URL specified in <code>Web.config</code>.
+            </p>
+            <p class="card-text">
+                <strong>Tenant ID:</strong> <code>@DotNetFrameworkSamlSP.Helpers.ConfigHelper.AzureTenantId</code><br>
+                <strong>App ID:</strong> <code>392e0c42-2ef3-45d6-8561-4eb70f3e187a</code>
+            </p>
+        </div>
+    </div>
+</div>
+
+@if (Request.IsAuthenticated)
+{
+    <script>
+        // Auto-save session to extension when user is authenticated
+        const EXTENSION_ID = '@DotNetFrameworkSamlSP.Helpers.ConfigHelper.ExtensionId';
+
+        // Extract user info from the page
+        const userIdentity = '@User.Identity.Name';
+        const claims = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(
+            System.Security.Claims.ClaimsPrincipal.Current.Claims.Select(c => new { Type = c.Type, Value = c.Value })
+        ));
+
+        const userName = claims.find(c => c.Type.includes('displayname') || c.Type.includes('givenname'))?.Value ||
+                        claims.find(c => c.Type.includes('name'))?.Value ||
+                        userIdentity;
+        const userEmail = claims.find(c => c.Type.includes('emailaddress') || c.Type.includes('upn'))?.Value || '';
+
+        // Try to save to extension
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            chrome.runtime.sendMessage(EXTENSION_ID, {
+                action: 'saveSession',
+                session: {
+                    user: {
+                        name: userName,
+                        email: userEmail
+                    },
+                    authenticatedAt: Date.now()
+                }
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.log('Extension not available:', chrome.runtime.lastError.message);
+                } else if (response && response.success) {
+                    console.log('Session saved to extension successfully!');
+                } else {
+                    console.log('Failed to save to extension');
+                }
+            });
+        }
+    </script>
+}

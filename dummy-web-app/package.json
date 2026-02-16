@@ -1,0 +1,12 @@
+{
+  "name": "dummy-web-app",
+  "version": "1.0.0",
+  "description": "Dummy web application with centralized auth extension integration",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -c-1"
+  },
+  "keywords": ["auth", "saml", "extension"],
+  "author": "",
+  "license": "ISC"
+}

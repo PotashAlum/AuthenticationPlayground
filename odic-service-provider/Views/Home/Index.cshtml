@@ -1,0 +1,26 @@
+@{
+    ViewBag.Title = "Home";
+}
+
+<div class="card">
+    <h2>OIDC Service Provider</h2>
+    <p style="margin: 12px 0;">This application demonstrates OpenID Connect authentication with Microsoft Entra ID (Azure AD).</p>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="error">
+            <strong>Authentication Error:</strong> @ViewBag.ErrorMessage
+        </div>
+    }
+
+    @if (Request.IsAuthenticated)
+    {
+        <p style="margin: 12px 0;">You are signed in as <strong>@User.Identity.Name</strong>.</p>
+        <a href="@Url.Action("Claims", "Home")" class="btn">View Claims</a>
+        <a href="@Url.Action("SignOut", "Account")" class="btn btn-danger" style="margin-left: 8px;">Sign Out</a>
+    }
+    else
+    {
+        <a href="@Url.Action("SignIn", "Account")" class="btn">Sign In with Entra ID</a>
+    }
+</div>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dummy Web Application</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .status.loading {
+            background-color: #e7f3ff;
+            color: #004085;
+        }
+        .status.authenticated {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.not-authenticated {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .user-info h3 {
+            margin-top: 0;
+        }
+        .user-info div {
+            margin: 8px 0;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .extension-info {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .extension-info h4 {
+            margin-top: 0;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dummy Web Application</h1>
+        <p class="subtitle">This is a demo application that integrates with the centralized auth extension</p>
+
+        <div id="status" class="status loading">
+            <div class="spinner"></div>
+            <span>Checking authentication status...</span>
+        </div>
+
+        <div id="userInfo" class="user-info" style="display: none;">
+            <h3>User Information</h3>
+            <div id="userDetails"></div>
+        </div>
+
+        <div id="actions">
+            <button id="loginBtn" class="btn-primary" style="display: none;">Login</button>
+            <button id="checkExtensionBtn" class="btn-secondary" style="display: none;">Check Extension</button>
+            <button id="logoutBtn" class="btn-danger" style="display: none;">Logout</button>
+        </div>
+
+        <div id="extensionInfo" class="extension-info" style="display: none;">
+            <h4>Extension Status</h4>
+            <p id="extensionStatus"></p>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

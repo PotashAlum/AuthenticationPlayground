@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Extension Communication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            padding-left: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Extension Communication Test</h1>
+
+    <div>
+        <button onclick="testExtensionReady()">1. Check if Extension Loaded</button>
+        <button onclick="testSendMessage()">2. Send Test Message</button>
+        <button onclick="testSaveSession()">3. Test Save Session</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <h3>Console Log:</h3>
+    <div class="log" id="log"></div>
+
+    <script>
+        let extensionReady = false;
+        let extensionId = null;
+
+        function log(message, data = null) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            if (data) {
+                entry.innerHTML += `<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message, data);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Listen for messages from extension
+        window.addEventListener('message', (event) => {
+            log('Received window message', {
+                type: event.data.type,
+                data: event.data
+            });
+
+            if (event.data.type === 'AUTH_EXTENSION_READY') {
+                extensionReady = true;
+                extensionId = event.data.extensionId;
+                log('✅ Extension is READY!', { extensionId });
+            } else if (event.data.type === 'AUTH_FROM_EXTENSION') {
+                log('✅ Response from extension', event.data.payload);
+            }
+        });
+
+        function testExtensionReady() {
+            log('Extension ready status:', {
+                ready: extensionReady,
+                id: extensionId
+            });
+        }
+
+        function testSendMessage() {
+            log('Sending test message to extension...');
+            window.postMessage({
+                type: 'AUTH_TO_EXTENSION',
+                payload: {
+                    action: 'ping',
+                    test: 'hello from web page'
+                }
+            }, '*');
+        }
+
+        function testSaveSession() {
+            log('Testing save session...');
+            window.postMessage({
+                type: 'AUTH_TO_EXTENSION',
+                payload: {
+                    action: 'saveSession',
+                    session: {
+                        user: {
+                            name: 'Test User',
+                            email: 'test@example.com'
+                        },
+                        authenticatedAt: Date.now()
+                    }
+                }
+            }, '*');
+        }
+
+        log('Test page loaded. Waiting for extension...');
+
+        // Give extension time to load
+        setTimeout(() => {
+            if (!extensionReady) {
+                log('⚠️ Extension did not signal ready after 2 seconds');
+                log('Check chrome://extensions - is the extension loaded?');
+                log('Check extension background page console for errors');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

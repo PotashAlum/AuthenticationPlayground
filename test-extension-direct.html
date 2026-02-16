@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Extension Direct Communication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            padding-left: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Extension Direct Communication Test</h1>
+    <p>Using chrome.runtime.sendMessage with extension ID</p>
+
+    <div>
+        <button onclick="testPing()">1. Ping Extension</button>
+        <button onclick="testCheckSession()">2. Check Session</button>
+        <button onclick="testSaveSession()">3. Save Session</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <h3>Console Log:</h3>
+    <div class="log" id="log"></div>
+
+    <script>
+        const EXTENSION_ID = 'dkmohfcgchpbbailldppjigcbgdffmbb';
+
+        function log(message, data = null) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            if (data) {
+                entry.innerHTML += `<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message, data);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function testPing() {
+            log('Sending ping to extension...');
+            chrome.runtime.sendMessage(EXTENSION_ID, {
+                action: 'ping'
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    log('❌ Error:', chrome.runtime.lastError.message);
+                } else {
+                    log('✅ Response:', response);
+                }
+            });
+        }
+
+        function testCheckSession() {
+            log('Checking session...');
+            chrome.runtime.sendMessage(EXTENSION_ID, {
+                action: 'checkSession'
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    log('❌ Error:', chrome.runtime.lastError.message);
+                } else {
+                    log('✅ Response:', response);
+                }
+            });
+        }
+
+        function testSaveSession() {
+            log('Saving test session...');
+            chrome.runtime.sendMessage(EXTENSION_ID, {
+                action: 'saveSession',
+                session: {
+                    user: {
+                        name: 'Test User',
+                        email: 'test@example.com'
+                    },
+                    authenticatedAt: Date.now()
+                }
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    log('❌ Error:', chrome.runtime.lastError.message);
+                } else {
+                    log('✅ Response:', response);
+                }
+            });
+        }
+
+        log('Test page loaded');
+        log('Extension ID: ' + EXTENSION_ID);
+    </script>
+</body>
+</html>

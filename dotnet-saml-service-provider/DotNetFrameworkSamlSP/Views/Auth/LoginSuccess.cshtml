@@ -1,0 +1,206 @@
+@{
+    ViewBag.Title = "Login Successful";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 64px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .user-info div {
+            margin: 8px 0;
+        }
+        .user-info strong {
+            color: #666;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status.loading {
+            background-color: #e7f3ff;
+            color: #004085;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.info {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✓</div>
+        <h1>Login Successful!</h1>
+        <p>You have been authenticated successfully.</p>
+
+        <div class="user-info">
+            <div><strong>Name:</strong> @ViewBag.UserName</div>
+            <div><strong>Email:</strong> @ViewBag.UserEmail</div>
+        </div>
+
+        <div id="status" class="status loading">
+            <div class="spinner"></div>
+            <p>Saving session to extension...</p>
+        </div>
+
+        <a href="@Url.Action("Index", "Home")" class="btn" id="homeLink" style="display: none;">Go to Home</a>
+    </div>
+
+    <script>
+        const EXTENSION_ID = '@DotNetFrameworkSamlSP.Helpers.ConfigHelper.ExtensionId';
+        const userName = '@ViewBag.UserName';
+        const userEmail = '@ViewBag.UserEmail';
+
+        async function saveSessionToExtension() {
+            // Debug: Check if chrome.runtime is available
+            console.log('chrome.runtime available?', typeof chrome !== 'undefined' && chrome.runtime);
+            console.log('userName:', userName);
+            console.log('userEmail:', userEmail);
+
+            if (typeof chrome === 'undefined' || !chrome.runtime) {
+                console.error('chrome.runtime is not available - externally_connectable not working');
+                showInfo('Could not communicate with extension. Session saved locally in this browser.');
+                setTimeout(() => {
+                    document.getElementById('homeLink').style.display = 'inline-block';
+                }, 1500);
+                return;
+            }
+
+            try {
+                // Use chrome.runtime.sendMessage with extension ID
+                console.log('Sending message to extension with ID:', EXTENSION_ID);
+
+                let responseReceived = false;
+
+                // Set a timeout in case the extension doesn't respond
+                const timeout = setTimeout(() => {
+                    if (!responseReceived) {
+                        console.warn('Extension response timeout');
+                        showInfo('Could not communicate with extension. Session saved locally in this browser.');
+                        document.getElementById('homeLink').style.display = 'inline-block';
+                    }
+                }, 3000);
+
+                chrome.runtime.sendMessage(EXTENSION_ID, {
+                    action: 'saveSession',
+                    session: {
+                        user: {
+                            name: userName,
+                            email: userEmail
+                        },
+                        authenticatedAt: Date.now()
+                    }
+                }, (response) => {
+                    responseReceived = true;
+                    clearTimeout(timeout);
+
+                    console.log('Response received:', response);
+                    console.log('chrome.runtime.lastError:', chrome.runtime.lastError);
+
+                    if (chrome.runtime.lastError) {
+                        console.error('Extension error:', chrome.runtime.lastError.message);
+                        showInfo('Could not communicate with extension. Session saved locally in this browser.');
+                    } else if (response && response.success) {
+                        showSuccess('Session saved to extension successfully!');
+                        console.log('Session saved to extension successfully!');
+                    } else {
+                        console.warn('Extension response not successful:', response);
+                        showInfo('Could not communicate with extension. Session saved locally in this browser.');
+                    }
+
+                    setTimeout(() => {
+                        document.getElementById('homeLink').style.display = 'inline-block';
+                    }, 1500);
+                });
+            } catch (error) {
+                console.error('Extension error:', error);
+                showInfo('Could not communicate with extension. Session saved locally in this browser.');
+                setTimeout(() => {
+                    document.getElementById('homeLink').style.display = 'inline-block';
+                }, 1500);
+            }
+        }
+
+        function showSuccess(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = '<p>' + message + '</p>';
+        }
+
+        function showInfo(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status info';
+            statusDiv.innerHTML = '<p>' + message + '</p>';
+        }
+
+        // Try to save session when page loads
+        window.addEventListener('load', saveSessionToExtension);
+    </script>
+</body>
+</html>

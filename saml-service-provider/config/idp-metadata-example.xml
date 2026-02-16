@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+  This is an example IdP metadata file.
+  Replace this with your actual Identity Provider's metadata.
+
+  You can typically obtain this from your IdP at a URL like:
+  https://your-idp.com/metadata
+-->
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+                     entityID="https://idp.example.com">
+  <md:IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <md:KeyDescriptor use="signing">
+      <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        <ds:X509Data>
+          <ds:X509Certificate>
+            <!-- IdP's X.509 certificate goes here -->
+            MIIDdDCCAlygAwIBAgIJAKvSWxMa...
+          </ds:X509Certificate>
+        </ds:X509Data>
+      </ds:KeyInfo>
+    </md:KeyDescriptor>
+    <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                            Location="https://idp.example.com/sso"/>
+    <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                            Location="https://idp.example.com/sso"/>
+    <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                           Location="https://idp.example.com/logout"/>
+  </md:IDPSSODescriptor>
+</md:EntityDescriptor>
