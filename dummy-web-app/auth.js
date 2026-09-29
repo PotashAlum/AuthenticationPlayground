@@ -27,7 +27,7 @@ async function checkAuthentication() {
         try {
             const session = JSON.parse(decodeURIComponent(sessionData));
             console.log('Received session from auth service:', session);
-            showAuthenticated(session.user);
+            showAuthenticated(session.user, session.authType);
             // Clean up URL
             window.history.replaceState({}, document.title, window.location.pathname);
             return;
@@ -57,7 +57,7 @@ function showStatus(type, message) {
     }
 }
 
-function showAuthenticated(user) {
+function showAuthenticated(user, authType) {
     authenticated = true;
     userInfo = user;
 
@@ -69,6 +69,7 @@ function showAuthenticated(user) {
     document.getElementById('userDetails').innerHTML = `
         <div><strong>Name:</strong> ${user.name || 'N/A'}</div>
         <div><strong>Email:</strong> ${user.email || 'N/A'}</div>
+        ${authType ? `<div><strong>Auth Method:</strong> ${authType}</div>` : ''}
     `;
 
     document.getElementById('logoutBtn').style.display = 'inline-block';

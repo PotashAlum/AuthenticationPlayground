@@ -156,6 +156,7 @@ else
                 name: session.user.name,
                 email: session.user.email
             },
+            authType: session.authType || 'Extension',
             authenticatedAt: session.authenticatedAt
         };
         const sessionParam = encodeURIComponent(JSON.stringify(sessionData));

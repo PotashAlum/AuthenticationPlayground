@@ -121,6 +121,7 @@
         const EXTENSION_ID = '@ConfigHelper.ExtensionId';
         const userName = '@ViewBag.UserName';
         const userEmail = '@ViewBag.UserEmail';
+        const authType = '@ViewBag.AuthType';
 
         async function saveSessionToExtension() {
             // Debug: Check if chrome.runtime is available
@@ -137,6 +138,7 @@
                         name: userName,
                         email: userEmail
                     },
+                    authType: authType,
                     authenticatedAt: Date.now()
                 };
                 const sessionParam = encodeURIComponent(JSON.stringify(sessionData));
@@ -166,6 +168,7 @@
                             name: userName,
                             email: userEmail
                         },
+                        authType: authType,
                         authenticatedAt: Date.now()
                     }
                 }, (response) => {
@@ -192,6 +195,7 @@
                             name: userName,
                             email: userEmail
                         },
+                        authType: authType,
                         authenticatedAt: Date.now()
                     };
                     const sessionParam = encodeURIComponent(JSON.stringify(sessionData));
@@ -206,6 +210,7 @@
                         name: userName,
                         email: userEmail
                     },
+                    authType: authType,
                     authenticatedAt: Date.now()
                 };
                 const sessionParam = encodeURIComponent(JSON.stringify(sessionData));
